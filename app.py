@@ -1,10 +1,14 @@
 """
 Project 2: Personality Prediction System Through CV Analysis
 ============================================================
-Predicts Big Five personality traits from a resume/CV file.
+Flask backend — serves index.html and exposes /analyse API endpoint.
 
-Install dependencies (run once):
-    pip install nltk PyMuPDF scikit-learn
+Install dependencies:
+    pip install flask nltk PyMuPDF
+
+Run:
+    python app.py
+Then open:  http://localhost:5000
 """
 
 import os
@@ -12,14 +16,18 @@ import re
 import sys
 from collections import Counter
 
+from flask import Flask, request, jsonify, send_from_directory
+
 import nltk
-nltk.download("stopwords",  quiet=True)
-nltk.download("punkt",      quiet=True)
-nltk.download("punkt_tab",  quiet=True)
-nltk.download("wordnet",    quiet=True)
+nltk.download("stopwords", quiet=True)
+nltk.download("punkt",     quiet=True)
+nltk.download("punkt_tab", quiet=True)
+nltk.download("wordnet",   quiet=True)
 
 from nltk.corpus import stopwords
 from nltk.stem   import WordNetLemmatizer
+
+app = Flask(__name__, static_folder=".", template_folder=".")
 
 
 # ══════════════════════════════════════════════════════════════
@@ -90,76 +98,44 @@ DESCRIPTIONS = {
     },
 }
 
-
-# ══════════════════════════════════════════════════════════════
-# 2.  INTERACTIVE INPUT  (no hardcoded paths)
-# ══════════════════════════════════════════════════════════════
-
-def prompt_file_path() -> str:
-    """Ask the user for a CV file path and validate it."""
-    while True:
-        path = input("\n  Enter path to CV file (.pdf or .txt): ").strip().strip('"').strip("'")
-        if not path:
-            print("  [!] No path entered. Please try again.")
-            continue
-        if not os.path.isfile(path):
-            print(f"  [!] File not found: {path}")
-            continue
-        ext = os.path.splitext(path)[1].lower()
-        if ext not in (".pdf", ".txt"):
-            print("  [!] Unsupported format. Please provide a .pdf or .txt file.")
-            continue
-        return path
-
-
-def prompt_candidate_name() -> str:
-    """Ask the user for the candidate's name (optional)."""
-    name = input("  Enter candidate name (press Enter to skip): ").strip()
-    return name if name else "Candidate"
-
-
-def prompt_save_report():
-    """Ask whether to save the report and where."""
-    choice = input("  Save report to a .txt file? (y/n): ").strip().lower()
-    if choice == "y":
-        out = input("  Output path (e.g. report.txt): ").strip().strip('"').strip("'")
-        return out if out else "personality_report.txt"
-    return None
+TRAIT_EMOJIS = {
+    "Openness":            "🎨",
+    "Conscientiousness":   "📋",
+    "Extraversion":        "🤝",
+    "Agreeableness":       "💛",
+    "Emotional Stability": "⚖️",
+}
 
 
 # ══════════════════════════════════════════════════════════════
-# 3.  TEXT EXTRACTION
+# 2.  TEXT EXTRACTION
 # ══════════════════════════════════════════════════════════════
 
-def extract_text_from_pdf(pdf_path: str) -> str:
-    """Extract raw text from a PDF using PyMuPDF."""
+def extract_text_from_pdf(file_bytes: bytes) -> str:
     try:
         import fitz
     except ImportError:
-        sys.exit("  [!] PyMuPDF not installed. Run:  pip install PyMuPDF")
-    doc  = fitz.open(pdf_path)
+        raise ImportError("PyMuPDF not installed. Run: pip install PyMuPDF")
+    doc  = fitz.open(stream=file_bytes, filetype="pdf")
     text = " ".join(page.get_text() for page in doc)
     doc.close()
     return text
 
 
-def load_cv_text(file_path: str) -> str:
-    """Load CV content from a .pdf or .txt file."""
-    if os.path.splitext(file_path)[1].lower() == ".pdf":
-        return extract_text_from_pdf(file_path)
-    with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
-        return f.read()
+def extract_text(file_bytes: bytes, filename: str) -> str:
+    ext = os.path.splitext(filename)[1].lower()
+    if ext == ".pdf":
+        return extract_text_from_pdf(file_bytes)
+    return file_bytes.decode("utf-8", errors="ignore")
 
 
 # ══════════════════════════════════════════════════════════════
-# 4.  PRE-PROCESSING
+# 3.  NLP PIPELINE
 # ══════════════════════════════════════════════════════════════
 
 def preprocess(text: str) -> list:
-    """Lowercase → strip non-alpha → tokenise → remove stopwords → lemmatise."""
     lemmatizer = WordNetLemmatizer()
     stop_words = set(stopwords.words("english"))
-
     text   = text.lower()
     text   = re.sub(r"[^a-z\s]", " ", text)
     tokens = nltk.word_tokenize(text)
@@ -168,22 +144,13 @@ def preprocess(text: str) -> list:
     return tokens
 
 
-# ══════════════════════════════════════════════════════════════
-# 5.  TRAIT SCORING
-# ══════════════════════════════════════════════════════════════
-
 def score_traits(tokens: list) -> dict:
-    """Count keyword hits per trait and normalise to 0-100."""
     freq    = Counter(tokens)
     raw     = {trait: sum(freq.get(kw, 0) for kw in kws)
                for trait, kws in TRAIT_KEYWORDS.items()}
     max_val = max(raw.values()) or 1
     return {t: round((v / max_val) * 100, 1) for t, v in raw.items()}
 
-
-# ══════════════════════════════════════════════════════════════
-# 6.  INTERPRETATION
-# ══════════════════════════════════════════════════════════════
 
 def interpret(scores: dict) -> dict:
     return {
@@ -192,91 +159,65 @@ def interpret(scores: dict) -> dict:
     }
 
 
-def dominant_trait(scores: dict) -> str:
-    return max(scores, key=scores.get)
-
-
 # ══════════════════════════════════════════════════════════════
-# 7.  PRINT REPORT
+# 4.  ROUTES
 # ══════════════════════════════════════════════════════════════
 
-def print_report(scores: dict, descriptions: dict, name: str = "Candidate") -> None:
-    BAR  = 30
-    LINE = "=" * 64
-
-    print(f"\n{LINE}")
-    print(f"   PERSONALITY PREDICTION REPORT  —  {name.upper()}")
-    print(LINE)
-
-    for trait in TRAIT_KEYWORDS:          # guaranteed order
-        score  = scores.get(trait, 0.0)
-        desc   = descriptions.get(trait, "")
-        filled = int((score / 100) * BAR)
-        bar    = "█" * filled + "░" * (BAR - filled)
-        level  = "HIGH" if score >= 50 else "LOW "
-        print(f"\n  {trait:<22}  {score:>5}%  [{bar}]  {level}")
-        print(f"  └─ {desc}")
-
-    print(f"\n{LINE}")
-    print(f"   Dominant Trait : {dominant_trait(scores)}")
-    print(LINE + "\n")
+@app.route("/")
+def index():
+    return send_from_directory(".", "index.html")
 
 
-# ══════════════════════════════════════════════════════════════
-# 8.  SAVE REPORT
-# ══════════════════════════════════════════════════════════════
+@app.route("/analyse", methods=["POST"])
+def analyse():
+    if "cv_file" not in request.files:
+        return jsonify({"error": "No file uploaded."}), 400
 
-def save_report(scores: dict, descriptions: dict, name: str, output_path: str) -> None:
-    BAR  = 30
-    lines = [
-        f"PERSONALITY PREDICTION REPORT — {name.upper()}",
-        "=" * 64, "",
-    ]
-    for trait in TRAIT_KEYWORDS:
-        score  = scores.get(trait, 0.0)
-        desc   = descriptions.get(trait, "")
-        filled = int((score / 100) * BAR)
-        bar    = "█" * filled + "░" * (BAR - filled)
-        level  = "HIGH" if score >= 50 else "LOW"
-        lines.append(f"{trait:<22}  {score:>5}%  [{bar}]  {level}")
-        lines.append(f"  └─ {desc}")
-        lines.append("")
-    lines.append(f"Dominant Trait: {dominant_trait(scores)}")
+    file     = request.files["cv_file"]
+    name     = request.form.get("candidate_name", "Candidate").strip() or "Candidate"
+    filename = file.filename
 
-    with open(output_path, "w", encoding="utf-8") as f:
-        f.write("\n".join(lines))
-    print(f"  ✔  Report saved → {output_path}\n")
+    if not filename:
+        return jsonify({"error": "Empty filename."}), 400
 
+    ext = os.path.splitext(filename)[1].lower()
+    if ext not in (".pdf", ".txt"):
+        return jsonify({"error": "Only .pdf and .txt files are supported."}), 400
 
-# ══════════════════════════════════════════════════════════════
-# 9.  FULL PIPELINE
-# ══════════════════════════════════════════════════════════════
+    try:
+        file_bytes = file.read()
+        text       = extract_text(file_bytes, filename)
+    except Exception as e:
+        return jsonify({"error": f"Could not read file: {str(e)}"}), 500
 
-def analyse_cv_file(file_path: str, candidate_name: str = "Candidate",
-                    save_to=None) -> dict:
-    """Load file → preprocess → score → print → optionally save."""
-    print(f"\n  Reading: {file_path} …")
-    cv_text      = load_cv_text(file_path)
-    tokens       = preprocess(cv_text)
+    tokens       = preprocess(text)
     scores       = score_traits(tokens)
     descriptions = interpret(scores)
-    print_report(scores, descriptions, name=candidate_name)
-    if save_to:
-        save_report(scores, descriptions, candidate_name, save_to)
-    return scores
+    dominant     = max(scores, key=scores.get)
+
+    result = {
+        "candidate_name": name,
+        "dominant_trait": dominant,
+        "dominant_emoji": TRAIT_EMOJIS[dominant],
+        "dominant_desc":  descriptions[dominant],
+        "traits": [
+            {
+                "name":        trait,
+                "emoji":       TRAIT_EMOJIS[trait],
+                "score":       scores[trait],
+                "level":       "HIGH" if scores[trait] >= 50 else "LOW",
+                "description": descriptions[trait],
+            }
+            for trait in TRAIT_KEYWORDS          # fixed order
+        ],
+    }
+    return jsonify(result)
 
 
 # ══════════════════════════════════════════════════════════════
-# 10.  ENTRY POINT
+# 5.  ENTRY POINT
 # ══════════════════════════════════════════════════════════════
 
 if __name__ == "__main__":
-    print("\n" + "=" * 64)
-    print("   CV PERSONALITY ANALYZER  —  Big Five Trait Predictor")
-    print("=" * 64)
-
-    file_path      = prompt_file_path()
-    candidate_name = prompt_candidate_name()
-    save_path      = prompt_save_report()
-
-    analyse_cv_file(file_path, candidate_name, save_to=save_path)
+    print("\n  CV Personality Analyzer running at  http://localhost:5000\n")
+    app.run(debug=True, port=5000)
