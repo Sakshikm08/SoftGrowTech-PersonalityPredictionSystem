@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CV Personality Analyzer</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --card: #16161f;
+    --border: #2a2a3a;
+    --accent: #7c6bff;
+    --accent2: #ff6b9d;
+    --accent3: #6bffd8;
+    --text: #e8e8f0;
+    --muted: #6b6b85;
+    --glow: rgba(124,107,255,0.15);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Mono', monospace;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Animated background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(124,107,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124,107,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .noise {
+    position: fixed;
+    inset: 0;
+    opacity: 0.025;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+
+  /* Header */
+  header {
+    text-align: center;
+    margin-bottom: 56px;
+  }
+
+  .badge {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    background: rgba(124,107,255,0.1);
+    border: 1px solid rgba(124,107,255,0.25);
+    padding: 6px 16px;
+    border-radius: 100px;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+  }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin-bottom: 14px;
+    background: linear-gradient(135deg, #fff 30%, var(--accent) 70%, var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .subtitle {
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  /* Upload zone */
+  .upload-zone {
+    border: 2px dashed var(--border);
+    border-radius: 20px;
+    padding: 52px 32px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: var(--surface);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .upload-zone::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, var(--glow), transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .upload-zone:hover, .upload-zone.drag-over {
+    border-color: var(--accent);
+    background: #13131d;
+  }
+
+  .upload-zone:hover::before, .upload-zone.drag-over::before {
+    opacity: 1;
+  }
+
+  .upload-icon {
+    width: 56px;
+    height: 56px;
+    margin: 0 auto 16px;
+    background: rgba(124,107,255,0.12);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    border: 1px solid rgba(124,107,255,0.2);
+  }
+
+  .upload-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+
+  .upload-hint {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .upload-hint span {
+    color: var(--accent);
+  }
+
+  #fileInput { display: none; }
+
+  /* Name input */
+  .name-row {
+    margin-top: 20px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .name-row input {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 18px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .name-row input::placeholder { color: var(--muted); }
+  .name-row input:focus { border-color: var(--accent); }
+
+  /* Analyse button */
+  .btn {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 14px 28px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.25s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), #9d8fff);
+    color: #fff;
+    box-shadow: 0 4px 24px rgba(124,107,255,0.35);
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(124,107,255,0.5);
+  }
+
+  .btn-primary:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .btn-outline {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 12px;
+    padding: 10px 16px;
+  }
+
+  .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* File status */
+  .file-status {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: rgba(107,255,216,0.06);
+    border: 1px solid rgba(107,255,216,0.2);
+    border-radius: 10px;
+    margin-top: 16px;
+    font-size: 12px;
+    color: var(--accent3);
+  }
+
+  .file-status.show { display: flex; }
+
+  /* Loader */
+  .loader {
+    display: none;
+    text-align: center;
+    padding: 40px;
+  }
+
+  .loader.show { display: block; }
+
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 16px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loader p { color: var(--muted); font-size: 13px; }
+
+  /* Results */
+  #results { display: none; }
+  #results.show { display: block; animation: fadeUp 0.5s ease; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .results-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .results-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+  }
+
+  .results-title span { color: var(--accent); }
+
+  /* Dominant trait card */
+  .dominant-card {
+    background: linear-gradient(135deg, rgba(124,107,255,0.12), rgba(255,107,157,0.06));
+    border: 1px solid rgba(124,107,255,0.25);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 28px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .dominant-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: rgba(124,107,255,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+    border: 1px solid rgba(124,107,255,0.3);
+  }
+
+  .dominant-label {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .dominant-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--accent);
+  }
+
+  .dominant-desc {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 4px;
+    line-height: 1.6;
+  }
+
+  /* Trait cards grid */
+  .traits-grid {
+    display: grid;
+    gap: 14px;
+  }
+
+  .trait-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px 24px;
+    transition: border-color 0.2s, transform 0.2s;
+    animation: fadeUp 0.4s ease both;
+  }
+
+  .trait-card:hover {
+    border-color: var(--accent);
+    transform: translateX(4px);
+  }
+
+  .trait-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    gap: 12px;
+  }
+
+  .trait-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .trait-emoji { font-size: 18px; }
+
+  .trait-score {
+    font-family: 'DM Mono', monospace;
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+
+  .bar-track {
+    height: 6px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 100px;
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+
+  .bar-fill {
+    height: 100%;
+    border-radius: 100px;
+    width: 0;
+    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .trait-desc {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  .level-badge {
+    display: inline-block;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 100px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+  }
+
+  .level-high { background: rgba(107,255,216,0.1); color: var(--accent3); border: 1px solid rgba(107,255,216,0.2); }
+  .level-low  { background: rgba(255,107,157,0.1); color: var(--accent2); border: 1px solid rgba(255,107,157,0.2); }
+
+  /* Section divider */
+  .section-gap { margin-top: 40px; }
+
+  .divider-label {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .divider-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Radar chart area */
+  .radar-wrap {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 32px;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 28px;
+  }
+
+  canvas#radarChart {
+    max-width: 320px;
+    width: 100%;
+  }
+
+  /* Export */
+  .export-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 28px;
+  }
+
+  /* Responsive */
+  @media (max-width: 540px) {
+    .dominant-card { flex-direction: column; text-align: center; }
+    .results-header { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+<div class="noise"></div>
+<div class="container">
+
+  <!-- Header -->
+  <header>
+    <div class="badge">AI · NLP · Big Five</div>
+    <h1>CV Personality<br/>Analyzer</h1>
+    <p class="subtitle">Upload a resume or CV (PDF or TXT) to predict<br/>Big Five personality traits using NLP keyword analysis.</p>
+  </header>
+
+  <!-- Upload -->
+  <div class="upload-zone" id="uploadZone">
+    <div class="upload-icon">📄</div>
+    <div class="upload-title">Drop your CV here</div>
+    <p class="upload-hint">
+      Drag & drop or <span>click to browse</span><br/>
+      Supports <span>.pdf</span> and <span>.txt</span> files
+    </p>
+    <input type="file" id="fileInput" accept=".pdf,.txt"/>
+  </div>
+
+  <div class="file-status" id="fileStatus">
+    <span>✅</span>
+    <span id="fileName">No file selected</span>
+  </div>
+
+  <div class="name-row">
+    <input type="text" id="candidateName" placeholder="Candidate name (optional)" maxlength="60"/>
+    <button class="btn btn-primary" id="analyseBtn" disabled onclick="runAnalysis()">
+      <span>Analyse</span> <span>→</span>
+    </button>
+  </div>
+
+  <!-- Loader -->
+  <div class="loader" id="loader">
+    <div class="spinner"></div>
+    <p>Analysing personality traits…</p>
+  </div>
+
+  <!-- Results -->
+  <div id="results">
+    <div class="section-gap"></div>
+    <div class="divider-label">Results</div>
+
+    <div class="results-header">
+      <div class="results-title">Personality Report — <span id="rName">Candidate</span></div>
+      <div class="export-row">
+        <button class="btn btn-outline" onclick="exportTXT()">⬇ Export .txt</button>
+        <button class="btn btn-outline" onclick="resetApp()">↺ New Analysis</button>
+      </div>
+    </div>
+
+    <!-- Dominant trait -->
+    <div class="dominant-card">
+      <div class="dominant-icon" id="domEmoji">🧠</div>
+      <div>
+        <div class="dominant-label">Dominant Trait</div>
+        <div class="dominant-name" id="domName">—</div>
+        <div class="dominant-desc" id="domDesc">—</div>
+      </div>
+    </div>
+
+    <!-- Radar chart -->
+    <div class="radar-wrap">
+      <canvas id="radarChart" width="320" height="320"></canvas>
+    </div>
+
+    <!-- Trait cards -->
+    <div class="traits-grid" id="traitsGrid"></div>
+  </div>
+
+</div>
+
+<!-- Chart.js for radar -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+<script>
+// ─── PDF.js worker ───────────────────────────────────────────
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+// ─── State ───────────────────────────────────────────────────
+let currentFile = null;
+let radarChartInst = null;
+
+// ─── Trait definitions ───────────────────────────────────────
+const TRAITS = {
+  "Openness": {
+    emoji: "🎨",
+    color: "#7c6bff",
+    keywords: ["creative","innovative","research","design","art","music","literature","explore","curious","experiment","novel","idea","vision","imagination","diverse","philosophy","culture","learning","insight","discovery","invention","strategy","brainstorm","concept","aesthetic","inventor","artistic"],
+    high: "Highly creative and intellectually curious. Thrives in innovative, research-driven environments.",
+    low:  "Prefers conventional, well-defined tasks over open-ended exploration.",
+  },
+  "Conscientiousness": {
+    emoji: "📋",
+    color: "#6bffd8",
+    keywords: ["organized","detail","responsible","plan","schedule","deadline","systematic","accurate","thorough","diligent","punctual","efficient","reliable","discipline","goal","achieve","complete","monitor","quality","procedure","compliance","standard","audit","structured","methodical","precise","meticulous"],
+    high: "Extremely organised, goal-oriented, and detail-focused. A consistently reliable performer.",
+    low:  "May prefer flexibility and spontaneity over strict structure.",
+  },
+  "Extraversion": {
+    emoji: "🤝",
+    color: "#ff9f6b",
+    keywords: ["leadership","team","communicate","present","collaborate","network","social","engage","motivate","outgoing","negotiation","coordinate","facilitate","mentor","coach","conference","public","speaking","ambassador","outreach","stakeholder","community","event","influence","persuade","spokesperson","recruit"],
+    high: "Strong communicator and natural leader. Energised by teamwork, networking, and social engagement.",
+    low:  "Works best independently; may prefer analytical or written roles over public-facing ones.",
+  },
+  "Agreeableness": {
+    emoji: "💛",
+    color: "#ffd96b",
+    keywords: ["support","help","cooperative","empathy","volunteer","assist","care","compassion","patience","mediate","charity","welfare","kind","trust","harmony","counseling","listen","understanding","service","inclusive","feedback","resolve","reconcile","considerate","nurture","collaborate","unity"],
+    high: "Deeply collaborative, empathetic, and supportive. An outstanding team player and culture fit.",
+    low:  "Direct and results-focused; values efficiency and outcomes over group consensus.",
+  },
+  "Emotional Stability": {
+    emoji: "⚖️",
+    color: "#ff6b9d",
+    keywords: ["calm","stable","consistent","resilient","adapt","stress","pressure","handle","manage","balance","compose","confident","assertive","focused","steady","endure","overcome","professional","constructive","objective","rational","logical","flexible","grounded","persevere","composure","equanimity"],
+    high: "Calm under pressure, highly resilient, and consistent across high-demand environments.",
+    low:  "May be sensitive to sudden change; benefits from structured, predictable work settings.",
+  },
+};
+
+const STOP_WORDS = new Set([
+  "a","an","the","and","or","but","in","on","at","to","for","of","with","by","from","as","is","was",
+  "are","were","be","been","being","have","has","had","do","does","did","will","would","could","should",
+  "may","might","shall","can","need","dare","ought","used","it","its","this","that","these","those",
+  "i","me","my","we","our","you","your","he","she","they","their","his","her","him","us","them","who",
+  "which","what","when","where","how","not","no","nor","so","yet","both","either","neither","each",
+  "more","most","other","some","such","than","then","too","very","just","also","well","up","out","if",
+  "about","into","through","during","before","after","above","below","between","under","again","further",
+  "here","there","all","any","few","much","only","own","same","per","via","while","since","until",
+  "across","along","among","around","without"
+]);
+
+// ─── File handling ────────────────────────────────────────────
+const uploadZone = document.getElementById('uploadZone');
+const fileInput  = document.getElementById('fileInput');
+
+uploadZone.addEventListener('click', () => fileInput.click());
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault();
+  uploadZone.classList.remove('drag-over');
+  const f = e.dataTransfer.files[0];
+  if (f) handleFile(f);
+});
+fileInput.addEventListener('change', e => {
+  if (e.target.files[0]) handleFile(e.target.files[0]);
+});
+
+function handleFile(file) {
+  const ext = file.name.split('.').pop().toLowerCase();
+  if (!['pdf','txt'].includes(ext)) {
+    alert('Please upload a .pdf or .txt file.');
+    return;
+  }
+  currentFile = file;
+  document.getElementById('fileName').textContent = file.name;
+  document.getElementById('fileStatus').classList.add('show');
+  document.getElementById('analyseBtn').disabled = false;
+}
+
+// ─── NLP helpers ─────────────────────────────────────────────
+function tokenize(text) {
+  return text.toLowerCase()
+    .replace(/[^a-z\s]/g, ' ')
+    .split(/\s+/)
+    .filter(t => t.length > 2 && !STOP_WORDS.has(t));
+}
+
+function scoreTraits(tokens) {
+  const freq = {};
+  for (const t of tokens) freq[t] = (freq[t] || 0) + 1;
+
+  const raw = {};
+  for (const [trait, def] of Object.entries(TRAITS)) {
+    raw[trait] = def.keywords.reduce((s, kw) => s + (freq[kw] || 0), 0);
+  }
+
+  const max = Math.max(...Object.values(raw), 1);
+  const scores = {};
+  for (const [t, v] of Object.entries(raw)) scores[t] = Math.round((v / max) * 100 * 10) / 10;
+  return scores;
+}
+
+// ─── PDF extraction ───────────────────────────────────────────
+async function extractPDF(file) {
+  const ab = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: ab }).promise;
+  let text = '';
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    text += content.items.map(s => s.str).join(' ') + '\n';
+  }
+  return text;
+}
+
+// ─── Main analysis ────────────────────────────────────────────
+async function runAnalysis() {
+  if (!currentFile) return;
+
+  document.getElementById('results').classList.remove('show');
+  document.getElementById('loader').classList.add('show');
+  document.getElementById('analyseBtn').disabled = true;
+
+  let text = '';
+  try {
+    if (currentFile.name.endsWith('.pdf')) {
+      text = await extractPDF(currentFile);
+    } else {
+      text = await currentFile.text();
+    }
+  } catch (e) {
+    alert('Could not read file: ' + e.message);
+    document.getElementById('loader').classList.remove('show');
+    document.getElementById('analyseBtn').disabled = false;
+    return;
+  }
+
+  const tokens = tokenize(text);
+  const scores = scoreTraits(tokens);
+
+  await new Promise(r => setTimeout(r, 600)); // brief UX pause
+
+  document.getElementById('loader').classList.remove('show');
+  renderResults(scores);
+}
+
+// ─── Render ───────────────────────────────────────────────────
+function renderResults(scores) {
+  const name = document.getElementById('candidateName').value.trim() || 'Candidate';
+  document.getElementById('rName').textContent = name;
+
+  const dominant = Object.entries(scores).sort((a,b) => b[1]-a[1])[0][0];
+  document.getElementById('domEmoji').textContent = TRAITS[dominant].emoji;
+  document.getElementById('domName').textContent  = dominant;
+  document.getElementById('domDesc').textContent  = TRAITS[dominant].high;
+
+  // Trait cards
+  const grid = document.getElementById('traitsGrid');
+  grid.innerHTML = '';
+  const sorted = Object.entries(scores).sort((a,b) => b[1]-a[1]);
+
+  sorted.forEach(([trait, score], i) => {
+    const def = TRAITS[trait];
+    const isHigh = score >= 50;
+    const card = document.createElement('div');
+    card.className = 'trait-card';
+    card.style.animationDelay = `${i * 80}ms`;
+
+    card.innerHTML = `
+      <div class="trait-top">
+        <div class="trait-name">
+          <span class="trait-emoji">${def.emoji}</span>
+          ${trait}
+        </div>
+        <div class="trait-score">${score}%</div>
+      </div>
+      <div class="bar-track">
+        <div class="bar-fill" id="bar-${i}" style="background: linear-gradient(90deg, ${def.color}, ${def.color}aa)"></div>
+      </div>
+      <span class="level-badge ${isHigh ? 'level-high' : 'level-low'}">${isHigh ? 'HIGH' : 'LOW'}</span>
+      <div class="trait-desc">${isHigh ? def.high : def.low}</div>
+    `;
+    grid.appendChild(card);
+
+    // animate bar
+    setTimeout(() => {
+      document.getElementById(`bar-${i}`).style.width = score + '%';
+    }, 200 + i * 80);
+  });
+
+  // Radar chart
+  drawRadar(scores);
+
+  // Show
+  const resultsEl = document.getElementById('results');
+  resultsEl.classList.add('show');
+  resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  // store for export
+  window._lastScores = scores;
+  window._lastName   = name;
+}
+
+// ─── Radar chart ─────────────────────────────────────────────
+function drawRadar(scores) {
+  const ctx = document.getElementById('radarChart').getContext('2d');
+  if (radarChartInst) radarChartInst.destroy();
+
+  const labels = Object.keys(TRAITS);
+  const data   = labels.map(t => scores[t] || 0);
+  const colors = labels.map(t => TRAITS[t].color);
+
+  radarChartInst = new Chart(ctx, {
+    type: 'radar',
+    data: {
+      labels,
+      datasets: [{
+        data,
+        backgroundColor: 'rgba(124,107,255,0.12)',
+        borderColor: '#7c6bff',
+        borderWidth: 2,
+        pointBackgroundColor: colors,
+        pointBorderColor: '#0a0a0f',
+        pointRadius: 5,
+        pointHoverRadius: 7,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        r: {
+          min: 0, max: 100,
+          ticks: {
+            stepSize: 25,
+            color: '#3a3a50',
+            font: { family: 'DM Mono', size: 10 },
+            backdropColor: 'transparent',
+          },
+          grid:        { color: 'rgba(255,255,255,0.06)' },
+          angleLines:  { color: 'rgba(255,255,255,0.06)' },
+          pointLabels: {
+            color: '#8888aa',
+            font: { family: 'Syne', size: 12, weight: '600' },
+          },
+        }
+      }
+    }
+  });
+}
+
+// ─── Export ───────────────────────────────────────────────────
+function exportTXT() {
+  const s = window._lastScores;
+  const n = window._lastName || 'Candidate';
+  if (!s) return;
+
+  const dominant = Object.entries(s).sort((a,b)=>b[1]-a[1])[0][0];
+  let out = `PERSONALITY PREDICTION REPORT — ${n.toUpperCase()}\n${'='.repeat(54)}\n\n`;
+  for (const [trait, score] of Object.entries(s)) {
+    const isHigh = score >= 50;
+    const bar = '█'.repeat(Math.round(score/5)) + '░'.repeat(20 - Math.round(score/5));
+    out += `${trait.padEnd(24)} ${String(score).padStart(5)}%  [${bar}]\n`;
+    out += `→ ${isHigh ? TRAITS[trait].high : TRAITS[trait].low}\n\n`;
+  }
+  out += `${'='.repeat(54)}\nDominant Trait: ${dominant}\n`;
+
+  const blob = new Blob([out], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `${n.replace(/\s+/g,'_')}_personality_report.txt`;
+  a.click();
+}
+
+// ─── Reset ────────────────────────────────────────────────────
+function resetApp() {
+  currentFile = null;
+  fileInput.value = '';
+  document.getElementById('fileStatus').classList.remove('show');
+  document.getElementById('analyseBtn').disabled = true;
+  document.getElementById('candidateName').value = '';
+  document.getElementById('results').classList.remove('show');
+  document.getElementById('fileName').textContent = '';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
