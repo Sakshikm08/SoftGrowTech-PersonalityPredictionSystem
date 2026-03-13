@@ -4,41 +4,34 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>CV Personality Analyzer</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg:         #f0f4ff;
-  --white:      #ffffff;
-  --border:     #dde3f0;
-  --border-md:  #c4cde0;
-  --text:       #1a1f36;
-  --muted:      #5a6480;
-  --subtle:     #8a93b0;
-  --accent:     #4361ee;
-  --accent-dk:  #3451d1;
-  --accent-lt:  #eef1ff;
-  --header-bg:  linear-gradient(135deg, #4361ee 0%, #7c3aed 100%);
+  --bg:        #eef2ff;
+  --white:     #ffffff;
+  --border:    #dde3f0;
+  --border-md: #c4cde0;
+  --text:      #1a1f36;
+  --muted:     #5a6480;
+  --subtle:    #8a93b0;
+  --accent:    #4361ee;
+  --accent-dk: #3451d1;
+  --accent-lt: #eef1ff;
+  --grad:      linear-gradient(135deg, #4361ee 0%, #7c3aed 100%);
 
-  /* trait palette — muted, professional tints */
-  --t1: #4361ee;   /* Openness — blue */
-  --t2: #0891b2;   /* Conscientiousness — teal */
-  --t3: #059669;   /* Extraversion — green */
-  --t4: #d97706;   /* Agreeableness — amber */
-  --t5: #7c3aed;   /* Emotional Stability — violet */
+  --c1: #4361ee; --c1b: #eef1ff; --c1d: #c7d2fe;
+  --c2: #0891b2; --c2b: #ecfeff; --c2d: #a5f3fc;
+  --c3: #059669; --c3b: #ecfdf5; --c3d: #6ee7b7;
+  --c4: #d97706; --c4b: #fffbeb; --c4d: #fcd34d;
+  --c5: #7c3aed; --c5b: #f5f3ff; --c5d: #ddd6fe;
 
-  --t1-lt: #eef1ff;
-  --t2-lt: #ecfeff;
-  --t3-lt: #ecfdf5;
-  --t4-lt: #fffbeb;
-  --t5-lt: #f5f3ff;
-
-  --radius:    8px;
-  --radius-lg: 14px;
-  --shadow:    0 1px 4px rgba(67,97,238,.08), 0 1px 2px rgba(0,0,0,.04);
-  --shadow-md: 0 4px 12px rgba(67,97,238,.12), 0 2px 4px rgba(0,0,0,.05);
+  --r:  8px;
+  --rl: 14px;
+  --sh: 0 1px 4px rgba(67,97,238,.08), 0 1px 2px rgba(0,0,0,.04);
+  --shm:0 4px 16px rgba(67,97,238,.13), 0 2px 6px rgba(0,0,0,.05);
 }
 
 html { scroll-behavior: smooth; }
@@ -54,78 +47,127 @@ body {
 
 /* ── Page ──────────────────────────────────────────────────── */
 .page {
-  max-width: 740px;
+  max-width: 760px;
   margin: 0 auto;
-  padding: 0 20px 80px;
+  padding: 0 20px 0;
 }
 
-/* ── Hero header ───────────────────────────────────────────── */
+/* ── Hero ──────────────────────────────────────────────────── */
+.hero-gap { height: 28px; }
+
 .hero {
-  background: var(--header-bg);
-  border-radius: 0 0 24px 24px;
-  padding: 40px 32px 36px;
-  margin-bottom: 32px;
+  background: var(--grad);
+  border-radius: 20px;
+  padding: 36px 36px 32px;
+  margin-bottom: 24px;
   color: #fff;
   position: relative;
   overflow: hidden;
 }
 
+/* subtle dot texture */
 .hero::before {
   content: '';
-  position: absolute;
-  inset: 0;
-  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='30' cy='30' r='1.5' fill='rgba(255,255,255,.12)'/%3E%3C/svg%3E") repeat;
+  position: absolute; inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='20' cy='20' r='1' fill='rgba(255,255,255,.1)'/%3E%3C/svg%3E") repeat;
   pointer-events: none;
 }
 
-.hero-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: .1em;
-  text-transform: uppercase;
-  background: rgba(255,255,255,.18);
-  border: 1px solid rgba(255,255,255,.25);
-  padding: 4px 12px;
-  border-radius: 100px;
-  margin-bottom: 14px;
-}
-
-.hero-dot {
-  width: 6px; height: 6px;
-  background: #a5f3fc;
+/* decorative blobs */
+.hero::after {
+  content: '';
+  position: absolute;
+  width: 260px; height: 260px;
+  background: rgba(255,255,255,.07);
   border-radius: 50%;
-  animation: blink 2s ease-in-out infinite;
+  top: -80px; right: -60px;
+  pointer-events: none;
 }
 
-@keyframes blink {
-  0%,100% { opacity: 1; }
-  50%      { opacity: .3; }
-}
+.hero-inner { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
 
-.hero h1 {
-  font-size: 26px;
-  font-weight: 700;
-  letter-spacing: -.4px;
+.hero-text h1 {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -.5px;
   margin-bottom: 6px;
-  position: relative;
 }
 
-.hero p {
+.hero-text p {
   font-size: 13px;
-  opacity: .8;
+  opacity: .78;
   line-height: 1.65;
-  position: relative;
+  max-width: 360px;
+}
+
+.hero-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255,255,255,.15);
+  border: 1px solid rgba(255,255,255,.25);
+  border-radius: 16px;
+  padding: 16px 24px;
+  text-align: center;
+  backdrop-filter: blur(8px);
+  flex-shrink: 0;
+}
+
+.hero-badge-num {
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.hero-badge-lbl {
+  font-size: 11px;
+  opacity: .75;
+  font-weight: 500;
+  letter-spacing: .05em;
+}
+
+/* ── How it works pills ────────────────────────────────────── */
+.how-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.how-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  box-shadow: var(--sh);
+  flex: 1;
+  min-width: 130px;
+  justify-content: center;
+}
+
+.how-pill-ico {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  flex-shrink: 0;
 }
 
 /* ── Card ──────────────────────────────────────────────────── */
 .card {
   background: var(--white);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow);
+  border-radius: var(--rl);
+  box-shadow: var(--sh);
 }
 
 .card-body { padding: 24px; }
@@ -135,15 +177,15 @@ body {
   font-weight: 700;
   color: var(--subtle);
   text-transform: uppercase;
-  letter-spacing: .08em;
+  letter-spacing: .09em;
   margin-bottom: 14px;
 }
 
 /* ── Upload zone ───────────────────────────────────────────── */
 #dropZone {
   border: 2px dashed var(--border-md);
-  border-radius: var(--radius);
-  padding: 36px 20px;
+  border-radius: var(--r);
+  padding: 40px 20px;
   text-align: center;
   cursor: pointer;
   background: var(--bg);
@@ -157,31 +199,26 @@ body {
 }
 
 .drop-icon {
-  width: 48px; height: 48px;
-  margin: 0 auto 12px;
-  background: linear-gradient(135deg, var(--accent-lt), #f0e8ff);
-  border: 1px solid var(--border);
-  border-radius: 12px;
+  width: 52px; height: 52px;
+  margin: 0 auto 14px;
+  background: var(--grad);
+  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: var(--shadow);
+  box-shadow: 0 4px 12px rgba(67,97,238,.3);
 }
 
-.drop-icon svg { color: var(--accent); }
+.drop-icon svg { color: #fff; }
 
 .drop-title {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 700;
   color: var(--text);
   margin-bottom: 4px;
 }
 
-.drop-hint {
-  font-size: 12px;
-  color: var(--subtle);
-}
-
+.drop-hint { font-size: 12px; color: var(--subtle); }
 .drop-hint strong { color: var(--accent); font-weight: 600; }
 
 #fileInput { display: none; }
@@ -195,12 +232,11 @@ body {
   padding: 10px 14px;
   background: #ecfdf5;
   border: 1px solid #6ee7b7;
-  border-radius: var(--radius);
+  border-radius: var(--r);
   font-size: 12px;
   color: #065f46;
   font-weight: 500;
 }
-
 .file-banner.show { display: flex; }
 
 /* ── Error ────────────────────────────────────────────────── */
@@ -210,11 +246,10 @@ body {
   padding: 10px 14px;
   background: #fef2f2;
   border: 1px solid #fca5a5;
-  border-radius: var(--radius);
+  border-radius: var(--r);
   font-size: 12px;
   color: #991b1b;
 }
-
 #errorBox.show { display: block; }
 
 /* ── Form row ──────────────────────────────────────────────── */
@@ -230,8 +265,8 @@ input[type="text"] {
   min-width: 160px;
   background: var(--white);
   border: 1px solid var(--border-md);
-  border-radius: var(--radius);
-  padding: 10px 14px;
+  border-radius: var(--r);
+  padding: 11px 14px;
   color: var(--text);
   font-family: 'Inter', sans-serif;
   font-size: 13px;
@@ -250,8 +285,8 @@ input[type="text"]:focus {
   font-family: 'Inter', sans-serif;
   font-size: 13px;
   font-weight: 600;
-  padding: 10px 20px;
-  border-radius: var(--radius);
+  padding: 11px 20px;
+  border-radius: var(--r);
   border: none;
   cursor: pointer;
   transition: all .15s;
@@ -262,16 +297,14 @@ input[type="text"]:focus {
 }
 
 .btn-primary {
-  background: var(--header-bg);
+  background: var(--grad);
   color: #fff;
-  box-shadow: 0 2px 8px rgba(67,97,238,.35);
+  box-shadow: 0 2px 10px rgba(67,97,238,.4);
 }
-
 .btn-primary:hover:not(:disabled) {
-  box-shadow: 0 4px 14px rgba(67,97,238,.45);
+  box-shadow: 0 4px 18px rgba(67,97,238,.5);
   transform: translateY(-1px);
 }
-
 .btn-primary:disabled { opacity: .4; cursor: not-allowed; transform: none; }
 
 .btn-outline {
@@ -279,9 +312,8 @@ input[type="text"]:focus {
   border: 1px solid var(--border-md);
   color: var(--muted);
   font-size: 12px;
-  padding: 8px 14px;
+  padding: 9px 14px;
 }
-
 .btn-outline:hover {
   border-color: var(--accent);
   color: var(--accent);
@@ -289,20 +321,26 @@ input[type="text"]:focus {
 }
 
 /* ── Loader ────────────────────────────────────────────────── */
-#loader { display: none; text-align: center; padding: 44px 0; }
+#loader { display: none; text-align: center; padding: 50px 0; }
 #loader.show { display: block; }
 
+.spinner-wrap { position: relative; width: 48px; height: 48px; margin: 0 auto 16px; }
 .spinner {
-  width: 34px; height: 34px;
+  width: 48px; height: 48px;
   border: 3px solid var(--border);
   border-top-color: var(--accent);
   border-radius: 50%;
-  animation: spin .7s linear infinite;
-  margin: 0 auto 12px;
+  animation: spin .8s linear infinite;
+}
+.spinner-inner {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  font-size: 18px;
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }
-#loader p { font-size: 13px; color: var(--muted); }
+#loader p { font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+#loader small { font-size: 11px; color: var(--subtle); }
 
 /* ── Results ───────────────────────────────────────────────── */
 #results { display: none; margin-top: 24px; }
@@ -313,6 +351,7 @@ input[type="text"]:focus {
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* results top bar */
 .results-bar {
   display: flex;
   align-items: center;
@@ -323,85 +362,146 @@ input[type="text"]:focus {
 }
 
 .results-bar h2 {
-  font-size: 17px;
-  font-weight: 700;
+  font-size: 18px;
+  font-weight: 800;
   color: var(--text);
+  letter-spacing: -.3px;
 }
-
 .results-bar h2 span { color: var(--accent); }
-
 .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
 
-/* ── Dominant card ─────────────────────────────────────────── */
-.dominant-card {
+/* ── Personality type banner ───────────────────────────────── */
+.type-banner {
   display: flex;
-  align-items: flex-start;
-  gap: 16px;
-  padding: 20px 22px;
-  background: linear-gradient(135deg, #eef1ff 0%, #f5f0ff 100%);
-  border: 1px solid #c7d2fe;
-  border-radius: var(--radius-lg);
-  margin-bottom: 20px;
+  align-items: center;
+  gap: 18px;
+  padding: 22px 24px;
+  background: var(--grad);
+  border-radius: var(--rl);
+  margin-bottom: 16px;
+  color: #fff;
   position: relative;
   overflow: hidden;
 }
 
-.dominant-card::after {
+.type-banner::after {
   content: '';
   position: absolute;
-  top: -20px; right: -20px;
-  width: 100px; height: 100px;
-  background: radial-gradient(circle, rgba(124,58,237,.12), transparent 70%);
+  width: 180px; height: 180px;
+  background: rgba(255,255,255,.06);
+  border-radius: 50%;
+  top: -60px; right: -40px;
   pointer-events: none;
 }
 
-.dom-emoji {
-  font-size: 22px;
-  width: 50px; height: 50px;
-  background: #fff;
-  border: 1px solid #c7d2fe;
-  border-radius: 12px;
+.type-ico {
+  font-size: 28px;
+  width: 56px; height: 56px;
+  background: rgba(255,255,255,.18);
+  border: 1px solid rgba(255,255,255,.3);
+  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(67,97,238,.12);
+  position: relative; z-index: 1;
 }
 
-.dom-label {
+.type-content { position: relative; z-index: 1; }
+
+.type-sup {
   font-size: 10px;
   font-weight: 700;
-  color: var(--accent);
+  letter-spacing: .12em;
   text-transform: uppercase;
-  letter-spacing: .1em;
+  opacity: .7;
+  margin-bottom: 2px;
+}
+
+.type-name {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -.3px;
   margin-bottom: 3px;
 }
 
-.dom-name {
-  font-size: 17px;
-  font-weight: 700;
-  color: var(--text);
-  margin-bottom: 4px;
+.type-desc {
+  font-size: 12px;
+  opacity: .8;
+  line-height: 1.6;
 }
 
-.dom-desc {
-  font-size: 12px;
-  color: var(--muted);
-  line-height: 1.65;
+/* ── Stat tiles ────────────────────────────────────────────── */
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.stat-tile {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--rl);
+  padding: 16px;
+  text-align: center;
+  box-shadow: var(--sh);
+  transition: box-shadow .2s, transform .2s;
+}
+
+.stat-tile:hover { box-shadow: var(--shm); transform: translateY(-2px); }
+
+.stat-val {
+  font-size: 22px;
+  font-weight: 800;
+  margin-bottom: 3px;
+  letter-spacing: -.5px;
+}
+
+.stat-lbl {
+  font-size: 11px;
+  color: var(--subtle);
+  font-weight: 500;
 }
 
 /* ── Radar ─────────────────────────────────────────────────── */
 .radar-wrap {
   display: flex;
   justify-content: center;
-  padding: 24px;
+  align-items: center;
+  padding: 28px 32px;
   background: linear-gradient(135deg, #fafbff, #f6f0ff);
-  border-radius: var(--radius-lg);
+  border-radius: var(--rl);
   border: 1px solid var(--border);
-  margin-bottom: 20px;
+  margin-bottom: 16px;
+  gap: 24px;
+  flex-wrap: wrap;
+  overflow: visible;
 }
 
-canvas { max-width: 290px; width: 100%; }
+canvas { max-width: 300px; width: 100%; }
+
+/* radar legend */
+.radar-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rl-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.rl-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
 
 /* ── Section label ─────────────────────────────────────────── */
 .section-label {
@@ -415,7 +515,6 @@ canvas { max-width: 290px; width: 100%; }
   align-items: center;
   gap: 10px;
 }
-
 .section-label::after {
   content: '';
   flex: 1;
@@ -429,32 +528,18 @@ canvas { max-width: 290px; width: 100%; }
 .trait-card {
   background: var(--white);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 16px 18px;
-  box-shadow: var(--shadow);
-  transition: box-shadow .2s, transform .2s, border-color .2s;
-  animation: fadeUp .35s ease both;
   border-left: 3px solid transparent;
+  border-radius: var(--rl);
+  padding: 16px 18px;
+  box-shadow: var(--sh);
+  transition: box-shadow .2s, transform .2s;
+  animation: fadeUp .35s ease both;
 }
+.trait-card:hover { box-shadow: var(--shm); transform: translateY(-1px); }
 
-.trait-card:hover {
-  box-shadow: var(--shadow-md);
-  transform: translateY(-1px);
-}
+.tc-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; gap: 8px; }
 
-.tc-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 10px;
-  gap: 8px;
-}
-
-.tc-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
+.tc-left { display: flex; align-items: center; gap: 10px; }
 
 .tc-emoji {
   font-size: 15px;
@@ -467,22 +552,13 @@ canvas { max-width: 290px; width: 100%; }
   border: 1px solid transparent;
 }
 
-.tc-name {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text);
-}
+.tc-name { font-size: 13px; font-weight: 600; color: var(--text); }
 
-.tc-right {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-}
+.tc-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 
 .tc-score {
-  font-size: 16px;
-  font-weight: 700;
+  font-size: 17px;
+  font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
 
@@ -494,18 +570,16 @@ canvas { max-width: 290px; width: 100%; }
   letter-spacing: .04em;
   text-transform: uppercase;
 }
-
 .badge-high { background: #dcfce7; color: #15803d; }
 .badge-low  { background: #f1f5f9; color: #64748b; }
 
 .bar-track {
-  height: 5px;
+  height: 6px;
   background: #f1f5f9;
   border-radius: 100px;
   overflow: hidden;
   margin-bottom: 10px;
 }
-
 .bar-fill {
   height: 100%;
   border-radius: 100px;
@@ -513,17 +587,39 @@ canvas { max-width: 290px; width: 100%; }
   transition: width 1s cubic-bezier(.4,0,.2,1);
 }
 
-.tc-desc {
+.tc-desc { font-size: 12px; color: var(--muted); line-height: 1.65; }
+
+/* ── Footer ────────────────────────────────────────────────── */
+.footer {
+  text-align: center;
+  padding: 36px 0 40px;
   font-size: 12px;
-  color: var(--muted);
-  line-height: 1.65;
+  color: var(--subtle);
+  border-top: 1px solid var(--border);
+  margin-top: 40px;
+}
+
+.footer strong { color: var(--muted); }
+
+/* ── Print styles ──────────────────────────────────────────── */
+@media print {
+  body { background: #fff; }
+  .hero, .how-row, .card-body > .card-label,
+  #dropZone, .file-banner, .form-row,
+  .btn-group, .footer { display: none !important; }
+  #results { display: block !important; }
+  .trait-card { break-inside: avoid; }
 }
 
 /* ── Responsive ────────────────────────────────────────────── */
-@media (max-width: 480px) {
-  .dominant-card { flex-direction: column; }
-  .results-bar   { flex-direction: column; align-items: flex-start; }
-  .hero          { padding: 28px 20px 26px; }
+@media (max-width: 540px) {
+  .type-banner { flex-direction: column; text-align: center; }
+  .stat-row { grid-template-columns: repeat(3, 1fr); }
+  .results-bar { flex-direction: column; align-items: flex-start; }
+  .hero-inner { flex-direction: column; }
+  .hero-badge { width: 100%; flex-direction: row; justify-content: center; }
+  .radar-wrap { flex-direction: column; }
+  .radar-legend { flex-direction: row; flex-wrap: wrap; justify-content: center; }
 }
 </style>
 </head>
@@ -531,21 +627,50 @@ canvas { max-width: 290px; width: 100%; }
 
 <div class="page">
 
+  <div class="hero-gap"></div>
+
   <!-- Hero -->
   <div class="hero">
-    <div class="hero-tag"><span class="hero-dot"></span> NLP · Big Five · AI</div>
-    <h1>CV Personality Analyzer</h1>
-    <p>Upload a résumé to instantly predict Big Five personality traits<br/>using natural language processing.</p>
+    <div class="hero-inner">
+      <div class="hero-text">
+        <h1>CV Personality Analyzer</h1>
+        <p>Upload any résumé and instantly uncover Big Five personality traits using natural language processing.</p>
+      </div>
+      <div class="hero-badge">
+        <div class="hero-badge-num">5</div>
+        <div class="hero-badge-lbl">Traits Analysed</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- How it works pills -->
+  <div class="how-row">
+    <div class="how-pill">
+      <div class="how-pill-ico" style="background:#eef1ff">📤</div>
+      Upload CV
+    </div>
+    <div class="how-pill">
+      <div class="how-pill-ico" style="background:#ecfdf5">🔍</div>
+      NLP Analysis
+    </div>
+    <div class="how-pill">
+      <div class="how-pill-ico" style="background:#f5f3ff">📊</div>
+      Trait Report
+    </div>
+    <div class="how-pill">
+      <div class="how-pill-ico" style="background:#fffbeb">⬇️</div>
+      Export Result
+    </div>
   </div>
 
   <!-- Upload card -->
-  <div class="card">
+  <div class="card" style="margin-bottom:24px">
     <div class="card-body">
       <div class="card-label">Upload CV</div>
 
       <div id="dropZone">
         <div class="drop-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
                stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
             <polyline points="14 2 14 8 20 8"/>
@@ -559,8 +684,7 @@ canvas { max-width: 290px; width: 100%; }
       </div>
 
       <div class="file-banner" id="fileBanner">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-             stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="20 6 9 17 4 12"/>
         </svg>
         <span id="pickedName">—</span>
@@ -572,8 +696,7 @@ canvas { max-width: 290px; width: 100%; }
         <input type="text" id="candidateName" placeholder="Candidate name (optional)" maxlength="60"/>
         <button class="btn btn-primary" id="analyseBtn" disabled onclick="runAnalysis()">
           Analyse
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <line x1="5" y1="12" x2="19" y2="12"/>
             <polyline points="12 5 19 12 12 19"/>
           </svg>
@@ -584,19 +707,30 @@ canvas { max-width: 290px; width: 100%; }
 
   <!-- Loader -->
   <div id="loader">
-    <div class="spinner"></div>
+    <div class="spinner-wrap">
+      <div class="spinner"></div>
+      <div class="spinner-inner">🧠</div>
+    </div>
     <p>Analysing personality traits…</p>
+    <small>Running NLP keyword analysis</small>
   </div>
 
   <!-- Results -->
   <div id="results">
 
     <div class="results-bar">
-      <h2>Report &mdash; <span id="rName">Candidate</span></h2>
+      <h2>Report — <span id="rName">Candidate</span></h2>
       <div class="btn-group">
+        <button class="btn btn-outline" onclick="window.print()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 6 2 18 2 18 9"/>
+            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+            <rect x="6" y="14" width="12" height="8"/>
+          </svg>
+          Print
+        </button>
         <button class="btn btn-outline" onclick="exportTXT()">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
             <polyline points="7 10 12 15 17 10"/>
             <line x1="12" y1="15" x2="12" y2="3"/>
@@ -604,64 +738,88 @@ canvas { max-width: 290px; width: 100%; }
           Export
         </button>
         <button class="btn btn-outline" onclick="resetAll()">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="1 4 1 10 7 10"/>
             <path d="M3.51 15a9 9 0 1 0 .49-3.5"/>
           </svg>
-          New Analysis
+          New
         </button>
       </div>
     </div>
 
-    <!-- Dominant trait -->
-    <div class="dominant-card">
-      <div class="dom-emoji" id="domIco">🧠</div>
-      <div>
-        <div class="dom-label">Dominant Trait</div>
-        <div class="dom-name" id="domName">—</div>
-        <div class="dom-desc" id="domDesc">—</div>
+    <!-- Personality type banner -->
+    <div class="type-banner">
+      <div class="type-ico" id="typeIco">🧠</div>
+      <div class="type-content">
+        <div class="type-sup">Personality Type</div>
+        <div class="type-name" id="typeName">—</div>
+        <div class="type-desc" id="typeDesc">—</div>
       </div>
     </div>
 
-    <!-- Radar -->
+    <!-- Stat tiles -->
+    <div class="stat-row">
+      <div class="stat-tile">
+        <div class="stat-val" id="statHigh" style="color:#059669">—</div>
+        <div class="stat-lbl">High Traits</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-val" id="statTop" style="color:#4361ee">—</div>
+        <div class="stat-lbl">Top Score</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-val" id="statAvg" style="color:#7c3aed">—</div>
+        <div class="stat-lbl">Avg Score</div>
+      </div>
+    </div>
+
+    <!-- Radar + legend -->
     <div class="radar-wrap">
-      <canvas id="radar" width="290" height="290"></canvas>
+      <canvas id="radar" width="300" height="300"></canvas>
+      <div class="radar-legend" id="radarLegend"></div>
     </div>
 
     <div class="section-label">Trait Breakdown</div>
-
     <div class="trait-list" id="traitList"></div>
 
   </div><!-- /results -->
 
+  <!-- Footer -->
+  <div class="footer">
+    <strong>CV Personality Analyzer</strong> &nbsp;·&nbsp; Big Five Model &nbsp;·&nbsp; NLP Keyword Analysis<br/>
+    <span style="margin-top:4px;display:block">Results are indicative and based on keyword frequency — not a clinical assessment.</span>
+  </div>
+
 </div><!-- /page -->
 
 <script>
-// Per-trait color config
 const TRAITS_META = {
-  "Openness":            { color: "#4361ee", bg: "#eef1ff", border: "#c7d2fe" },
-  "Conscientiousness":   { color: "#0891b2", bg: "#ecfeff", border: "#a5f3fc" },
-  "Extraversion":        { color: "#059669", bg: "#ecfdf5", border: "#6ee7b7" },
-  "Agreeableness":       { color: "#d97706", bg: "#fffbeb", border: "#fcd34d" },
-  "Emotional Stability": { color: "#7c3aed", bg: "#f5f3ff", border: "#ddd6fe" },
+  "Openness":            { color:"#4361ee", bg:"#eef1ff", border:"#c7d2fe" },
+  "Conscientiousness":   { color:"#0891b2", bg:"#ecfeff", border:"#a5f3fc" },
+  "Extraversion":        { color:"#059669", bg:"#ecfdf5", border:"#6ee7b7" },
+  "Agreeableness":       { color:"#d97706", bg:"#fffbeb", border:"#fcd34d" },
+  "Emotional Stability": { color:"#7c3aed", bg:"#f5f3ff", border:"#ddd6fe" },
 };
 
-let pickedFile = null;
-let radarChart = null;
-let lastResult = null;
+// Personality type mapping based on dominant trait
+const PERSONALITY_TYPES = {
+  "Openness":            { name:"The Innovator",    emoji:"💡", desc:"A creative, curious mind that thrives on new ideas, exploration, and intellectual challenge." },
+  "Conscientiousness":   { name:"The Achiever",     emoji:"🎯", desc:"A disciplined, goal-driven professional known for reliability, precision, and consistent delivery." },
+  "Extraversion":        { name:"The Connector",    emoji:"🤝", desc:"An energetic communicator and natural leader who excels in team environments and networking." },
+  "Agreeableness":       { name:"The Collaborator", emoji:"💛", desc:"A warm, empathetic team player who builds trust, supports others, and fosters inclusive cultures." },
+  "Emotional Stability": { name:"The Anchor",       emoji:"⚓", desc:"A calm, resilient professional who stays composed under pressure and adapts steadily to change." },
+};
 
-// ── Drop zone ────────────────────────────────────────────────
-const dropZone  = document.getElementById("dropZone");
+let pickedFile = null, radarChart = null, lastResult = null;
+
+// ── Drop zone ─────────────────────────────────────────────────
+const dropZone = document.getElementById("dropZone");
 const fileInput = document.getElementById("fileInput");
 
 dropZone.addEventListener("click", () => fileInput.click());
 dropZone.addEventListener("dragover", e => { e.preventDefault(); dropZone.classList.add("over"); });
 dropZone.addEventListener("dragleave", () => dropZone.classList.remove("over"));
-dropZone.addEventListener("drop", e => {
-  e.preventDefault(); dropZone.classList.remove("over");
-  if (e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]);
-});
+dropZone.addEventListener("drop", e => { e.preventDefault(); dropZone.classList.remove("over"); if (e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]); });
 fileInput.addEventListener("change", e => { if (e.target.files[0]) setFile(e.target.files[0]); });
 
 function setFile(f) {
@@ -674,7 +832,7 @@ function setFile(f) {
   document.getElementById("analyseBtn").disabled = false;
 }
 
-// ── Analyse ──────────────────────────────────────────────────
+// ── Analyse ───────────────────────────────────────────────────
 async function runAnalysis() {
   if (!pickedFile) return;
   hideError();
@@ -687,7 +845,7 @@ async function runAnalysis() {
   fd.append("candidate_name", document.getElementById("candidateName").value.trim());
 
   try {
-    const res  = await fetch("/analyse", { method: "POST", body: fd });
+    const res = await fetch("/analyse", { method:"POST", body:fd });
     const data = await res.json();
     if (!res.ok) { showError(data.error || "Server error."); return; }
     lastResult = data;
@@ -700,92 +858,104 @@ async function runAnalysis() {
   }
 }
 
-// ── Render ───────────────────────────────────────────────────
+// ── Render ────────────────────────────────────────────────────
 function render(data) {
-  document.getElementById("rName").textContent   = data.candidate_name;
-  document.getElementById("domIco").textContent  = data.dominant_emoji;
-  document.getElementById("domName").textContent = data.dominant_trait;
-  document.getElementById("domDesc").textContent = data.dominant_desc;
+  document.getElementById("rName").textContent = data.candidate_name;
 
+  // Personality type
+  const pt = PERSONALITY_TYPES[data.dominant_trait] || { name: data.dominant_trait, emoji:"🧠", desc: data.dominant_desc };
+  document.getElementById("typeIco").textContent  = pt.emoji;
+  document.getElementById("typeName").textContent = pt.name;
+  document.getElementById("typeDesc").textContent = pt.desc;
+
+  // Stats
+  const scores = data.traits.map(t => t.score);
+  const highCount = data.traits.filter(t => t.level === "HIGH").length;
+  const topScore  = Math.max(...scores);
+  const avgScore  = Math.round(scores.reduce((a,b) => a+b, 0) / scores.length);
+  document.getElementById("statHigh").textContent = highCount + " / 5";
+  document.getElementById("statTop").textContent  = topScore + "%";
+  document.getElementById("statAvg").textContent  = avgScore + "%";
+
+  // Radar legend
+  const legend = document.getElementById("radarLegend");
+  legend.innerHTML = "";
+  data.traits.forEach(t => {
+    const m = TRAITS_META[t.name] || { color:"#4361ee" };
+    legend.innerHTML += `<div class="rl-item"><div class="rl-dot" style="background:${m.color}"></div>${t.name} <strong style="color:${m.color};margin-left:auto;padding-left:8px">${t.score}%</strong></div>`;
+  });
+
+  // Trait cards
   const list = document.getElementById("traitList");
   list.innerHTML = "";
-
   data.traits.forEach((t, i) => {
-    const meta = TRAITS_META[t.name] || { color: "#4361ee", bg: "#eef1ff", border: "#c7d2fe" };
+    const m = TRAITS_META[t.name] || { color:"#4361ee", bg:"#eef1ff", border:"#c7d2fe" };
     const card = document.createElement("div");
     card.className = "trait-card";
     card.style.animationDelay = `${i * 65}ms`;
-    card.style.borderLeftColor = meta.color;
-
+    card.style.borderLeftColor = m.color;
     card.innerHTML = `
       <div class="tc-top">
         <div class="tc-left">
-          <div class="tc-emoji" style="background:${meta.bg};border-color:${meta.border}">${t.emoji}</div>
+          <div class="tc-emoji" style="background:${m.bg};border-color:${m.border}">${t.emoji}</div>
           <div class="tc-name">${t.name}</div>
         </div>
         <div class="tc-right">
-          <div class="tc-score" style="color:${meta.color}">${t.score}%</div>
-          <span class="badge ${t.level === "HIGH" ? "badge-high" : "badge-low"}">${t.level}</span>
+          <div class="tc-score" style="color:${m.color}">${t.score}%</div>
+          <span class="badge ${t.level==="HIGH"?"badge-high":"badge-low"}">${t.level}</span>
         </div>
       </div>
       <div class="bar-track">
-        <div class="bar-fill" id="bf${i}" style="background:linear-gradient(90deg,${meta.color},${meta.color}bb)"></div>
+        <div class="bar-fill" id="bf${i}" style="background:linear-gradient(90deg,${m.color},${m.color}cc)"></div>
       </div>
       <div class="tc-desc">${t.description}</div>
     `;
     list.appendChild(card);
-    setTimeout(() => {
-      document.getElementById(`bf${i}`).style.width = t.score + "%";
-    }, 150 + i * 65);
+    setTimeout(() => { document.getElementById(`bf${i}`).style.width = t.score + "%"; }, 150 + i * 65);
   });
 
   drawRadar(data.traits);
 
   const el = document.getElementById("results");
   el.classList.add("show");
-  el.scrollIntoView({ behavior: "smooth", block: "start" });
+  el.scrollIntoView({ behavior:"smooth", block:"start" });
 }
 
-// ── Radar ─────────────────────────────────────────────────────
+// ── Radar ──────────────────────────────────────────────────────
 function drawRadar(traits) {
   const ctx = document.getElementById("radar").getContext("2d");
   if (radarChart) radarChart.destroy();
-
-  const pointColors = traits.map(t => (TRAITS_META[t.name] || {color:"#4361ee"}).color);
-
+  const pointColors = traits.map(t => (TRAITS_META[t.name]||{color:"#4361ee"}).color);
   radarChart = new Chart(ctx, {
-    type: "radar",
-    data: {
+    type:"radar",
+    data:{
       labels: traits.map(t => t.name),
-      datasets: [{
+      datasets:[{
         data: traits.map(t => t.score),
-        backgroundColor: "rgba(67,97,238,.1)",
-        borderColor: "#4361ee",
-        borderWidth: 2,
+        backgroundColor:"rgba(67,97,238,.1)",
+        borderColor:"#4361ee",
+        borderWidth:2,
         pointBackgroundColor: pointColors,
-        pointBorderColor: "#fff",
-        pointBorderWidth: 2,
-        pointRadius: 5,
-        pointHoverRadius: 7,
+        pointBorderColor:"#fff",
+        pointBorderWidth:2,
+        pointRadius:5,
+        pointHoverRadius:7,
       }]
     },
-    options: {
-      responsive: true,
-      plugins: { legend: { display: false } },
-      scales: {
-        r: {
-          min: 0, max: 100,
-          ticks: {
-            stepSize: 25,
-            color: "#c4cde0",
-            backdropColor: "transparent",
-            font: { family: "Inter", size: 9 },
-          },
-          grid:        { color: "#e5e9f5" },
-          angleLines:  { color: "#dde3f0" },
-          pointLabels: {
-            color: "#5a6480",
-            font: { family: "Inter", size: 11, weight: "600" },
+    options:{
+      responsive:true,
+      layout: { padding: { top: 16, bottom: 16, left: 16, right: 16 } },
+      plugins:{ legend:{ display:false } },
+      scales:{
+        r:{
+          min:0, max:100,
+          ticks:{ stepSize:25, color:"#c4cde0", backdropColor:"transparent", font:{ family:"Inter", size:9 } },
+          grid:{ color:"#e5e9f5" },
+          angleLines:{ color:"#dde3f0" },
+          pointLabels:{
+            color:"#5a6480",
+            font:{ family:"Inter", size:10, weight:"600" },
+            padding: 8,
           },
         }
       }
@@ -793,24 +963,24 @@ function drawRadar(traits) {
   });
 }
 
-// ── Export ────────────────────────────────────────────────────
+// ── Export ─────────────────────────────────────────────────────
 function exportTXT() {
   if (!lastResult) return;
   const d = lastResult;
-  let out = `PERSONALITY PREDICTION REPORT\nCandidate : ${d.candidate_name}\n${"─".repeat(56)}\n\n`;
+  const pt = PERSONALITY_TYPES[d.dominant_trait] || { name: d.dominant_trait };
+  let out = `PERSONALITY PREDICTION REPORT\nCandidate      : ${d.candidate_name}\nPersonality Type: ${pt.name}\n${"─".repeat(58)}\n\n`;
   d.traits.forEach(t => {
-    const bar = "█".repeat(Math.round(t.score / 5)) + "░".repeat(20 - Math.round(t.score / 5));
+    const bar = "█".repeat(Math.round(t.score/5)) + "░".repeat(20 - Math.round(t.score/5));
     out += `${t.name.padEnd(24)} ${String(t.score).padStart(5)}%  [${bar}]  ${t.level}\n  ${t.description}\n\n`;
   });
-  out += `${"─".repeat(56)}\nDominant Trait : ${d.dominant_trait}\n`;
-
+  out += `${"─".repeat(58)}\nDominant Trait : ${d.dominant_trait}\n`;
   const a = document.createElement("a");
-  a.href = URL.createObjectURL(new Blob([out], { type: "text/plain" }));
-  a.download = `${d.candidate_name.replace(/\s+/g, "_")}_personality_report.txt`;
+  a.href = URL.createObjectURL(new Blob([out], { type:"text/plain" }));
+  a.download = `${d.candidate_name.replace(/\s+/g,"_")}_personality_report.txt`;
   a.click();
 }
 
-// ── Reset ─────────────────────────────────────────────────────
+// ── Reset ──────────────────────────────────────────────────────
 function resetAll() {
   pickedFile = null;
   fileInput.value = "";
@@ -819,18 +989,11 @@ function resetAll() {
   document.getElementById("candidateName").value = "";
   document.getElementById("results").classList.remove("show");
   hideError();
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  window.scrollTo({ top:0, behavior:"smooth" });
 }
 
-function showError(msg) {
-  const el = document.getElementById("errorBox");
-  el.textContent = msg;
-  el.classList.add("show");
-}
-
-function hideError() {
-  document.getElementById("errorBox").classList.remove("show");
-}
+function showError(msg) { const e = document.getElementById("errorBox"); e.textContent = msg; e.classList.add("show"); }
+function hideError()    { document.getElementById("errorBox").classList.remove("show"); }
 </script>
 </body>
 </html>
