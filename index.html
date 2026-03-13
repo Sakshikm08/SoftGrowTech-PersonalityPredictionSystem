@@ -467,38 +467,50 @@ input[type="text"]:focus {
 /* ── Radar ─────────────────────────────────────────────────── */
 .radar-wrap {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
-  padding: 28px 32px;
+  padding: 24px 20px 20px;
   background: linear-gradient(135deg, #fafbff, #f6f0ff);
   border-radius: var(--rl);
   border: 1px solid var(--border);
   margin-bottom: 16px;
-  gap: 24px;
-  flex-wrap: wrap;
-  overflow: visible;
 }
 
-canvas { max-width: 300px; width: 100%; }
+.radar-canvas-box {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+#radar {
+  width: 100% !important;
+  height: auto !important;
+  display: block;
+}
 
 /* radar legend */
 .radar-legend {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  justify-content: center;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  width: 100%;
 }
 
 .rl-item {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   font-size: 12px;
   color: var(--muted);
   font-weight: 500;
 }
 
 .rl-dot {
-  width: 10px; height: 10px;
+  width: 9px; height: 9px;
   border-radius: 50%;
   flex-shrink: 0;
 }
