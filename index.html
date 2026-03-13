@@ -10,25 +10,35 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg:        #f5f5f5;
-  --white:     #ffffff;
-  --border:    #e0e0e0;
-  --border-md: #cacaca;
-  --text:      #1a1a1a;
-  --muted:     #6b6b6b;
-  --subtle:    #9a9a9a;
-  --accent:    #2563eb;
-  --accent-lt: #eff4ff;
-  --success:   #166534;
-  --success-bg:#f0fdf4;
-  --success-bd:#bbf7d0;
-  --error:     #991b1b;
-  --error-bg:  #fef2f2;
-  --error-bd:  #fecaca;
+  --bg:         #f0f4ff;
+  --white:      #ffffff;
+  --border:     #dde3f0;
+  --border-md:  #c4cde0;
+  --text:       #1a1f36;
+  --muted:      #5a6480;
+  --subtle:     #8a93b0;
+  --accent:     #4361ee;
+  --accent-dk:  #3451d1;
+  --accent-lt:  #eef1ff;
+  --header-bg:  linear-gradient(135deg, #4361ee 0%, #7c3aed 100%);
+
+  /* trait palette — muted, professional tints */
+  --t1: #4361ee;   /* Openness — blue */
+  --t2: #0891b2;   /* Conscientiousness — teal */
+  --t3: #059669;   /* Extraversion — green */
+  --t4: #d97706;   /* Agreeableness — amber */
+  --t5: #7c3aed;   /* Emotional Stability — violet */
+
+  --t1-lt: #eef1ff;
+  --t2-lt: #ecfeff;
+  --t3-lt: #ecfdf5;
+  --t4-lt: #fffbeb;
+  --t5-lt: #f5f3ff;
+
   --radius:    8px;
-  --radius-lg: 12px;
-  --shadow:    0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.05);
-  --shadow-md: 0 4px 6px rgba(0,0,0,.07), 0 2px 4px rgba(0,0,0,.05);
+  --radius-lg: 14px;
+  --shadow:    0 1px 4px rgba(67,97,238,.08), 0 1px 2px rgba(0,0,0,.04);
+  --shadow-md: 0 4px 12px rgba(67,97,238,.12), 0 2px 4px rgba(0,0,0,.05);
 }
 
 html { scroll-behavior: smooth; }
@@ -42,31 +52,72 @@ body {
   line-height: 1.5;
 }
 
-/* ── Layout ───────────────────────────────────────────────── */
+/* ── Page ──────────────────────────────────────────────────── */
 .page {
-  max-width: 720px;
+  max-width: 740px;
   margin: 0 auto;
-  padding: 48px 20px 80px;
+  padding: 0 20px 80px;
 }
 
-/* ── Header ───────────────────────────────────────────────── */
-.page-header {
-  margin-bottom: 36px;
-  padding-bottom: 24px;
-  border-bottom: 1px solid var(--border);
+/* ── Hero header ───────────────────────────────────────────── */
+.hero {
+  background: var(--header-bg);
+  border-radius: 0 0 24px 24px;
+  padding: 40px 32px 36px;
+  margin-bottom: 32px;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
 }
 
-.page-header h1 {
-  font-size: 22px;
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='30' cy='30' r='1.5' fill='rgba(255,255,255,.12)'/%3E%3C/svg%3E") repeat;
+  pointer-events: none;
+}
+
+.hero-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  background: rgba(255,255,255,.18);
+  border: 1px solid rgba(255,255,255,.25);
+  padding: 4px 12px;
+  border-radius: 100px;
+  margin-bottom: 14px;
+}
+
+.hero-dot {
+  width: 6px; height: 6px;
+  background: #a5f3fc;
+  border-radius: 50%;
+  animation: blink 2s ease-in-out infinite;
+}
+
+@keyframes blink {
+  0%,100% { opacity: 1; }
+  50%      { opacity: .3; }
+}
+
+.hero h1 {
+  font-size: 26px;
   font-weight: 700;
-  color: var(--text);
-  letter-spacing: -.3px;
-  margin-bottom: 4px;
+  letter-spacing: -.4px;
+  margin-bottom: 6px;
+  position: relative;
 }
 
-.page-header p {
+.hero p {
   font-size: 13px;
-  color: var(--muted);
+  opacity: .8;
+  line-height: 1.65;
+  position: relative;
 }
 
 /* ── Card ──────────────────────────────────────────────────── */
@@ -79,13 +130,13 @@ body {
 
 .card-body { padding: 24px; }
 
-.card-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--muted);
+.card-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--subtle);
   text-transform: uppercase;
-  letter-spacing: .06em;
-  margin-bottom: 16px;
+  letter-spacing: .08em;
+  margin-bottom: 14px;
 }
 
 /* ── Upload zone ───────────────────────────────────────────── */
@@ -96,27 +147,28 @@ body {
   text-align: center;
   cursor: pointer;
   background: var(--bg);
-  transition: border-color .2s, background .2s;
+  transition: border-color .2s, background .2s, box-shadow .2s;
 }
 
 #dropZone:hover, #dropZone.over {
   border-color: var(--accent);
   background: var(--accent-lt);
+  box-shadow: 0 0 0 4px rgba(67,97,238,.08);
 }
 
 .drop-icon {
-  width: 44px; height: 44px;
+  width: 48px; height: 48px;
   margin: 0 auto 12px;
-  background: var(--white);
+  background: linear-gradient(135deg, var(--accent-lt), #f0e8ff);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: var(--shadow);
 }
 
-.drop-icon svg { color: var(--muted); }
+.drop-icon svg { color: var(--accent); }
 
 .drop-title {
   font-size: 14px;
@@ -130,7 +182,7 @@ body {
   color: var(--subtle);
 }
 
-.drop-hint strong { color: var(--accent); font-weight: 500; }
+.drop-hint strong { color: var(--accent); font-weight: 600; }
 
 #fileInput { display: none; }
 
@@ -141,11 +193,11 @@ body {
   gap: 8px;
   margin-top: 12px;
   padding: 10px 14px;
-  background: var(--success-bg);
-  border: 1px solid var(--success-bd);
+  background: #ecfdf5;
+  border: 1px solid #6ee7b7;
   border-radius: var(--radius);
   font-size: 12px;
-  color: var(--success);
+  color: #065f46;
   font-weight: 500;
 }
 
@@ -156,11 +208,11 @@ body {
   display: none;
   margin-top: 12px;
   padding: 10px 14px;
-  background: var(--error-bg);
-  border: 1px solid var(--error-bd);
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
   border-radius: var(--radius);
   font-size: 12px;
-  color: var(--error);
+  color: #991b1b;
 }
 
 #errorBox.show { display: block; }
@@ -188,10 +240,9 @@ input[type="text"] {
 }
 
 input[type="text"]::placeholder { color: var(--subtle); }
-
 input[type="text"]:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(37,99,235,.1);
+  box-shadow: 0 0 0 3px rgba(67,97,238,.12);
 }
 
 /* ── Buttons ───────────────────────────────────────────────── */
@@ -203,7 +254,7 @@ input[type="text"]:focus {
   border-radius: var(--radius);
   border: none;
   cursor: pointer;
-  transition: background .15s, box-shadow .15s, opacity .15s;
+  transition: all .15s;
   white-space: nowrap;
   display: inline-flex;
   align-items: center;
@@ -211,39 +262,39 @@ input[type="text"]:focus {
 }
 
 .btn-primary {
-  background: var(--accent);
+  background: var(--header-bg);
   color: #fff;
-  box-shadow: 0 1px 2px rgba(37,99,235,.3);
+  box-shadow: 0 2px 8px rgba(67,97,238,.35);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: #1d4ed8;
-  box-shadow: 0 2px 6px rgba(37,99,235,.4);
+  box-shadow: 0 4px 14px rgba(67,97,238,.45);
+  transform: translateY(-1px);
 }
 
-.btn-primary:disabled { opacity: .4; cursor: not-allowed; }
+.btn-primary:disabled { opacity: .4; cursor: not-allowed; transform: none; }
 
 .btn-outline {
   background: var(--white);
   border: 1px solid var(--border-md);
-  color: var(--text);
+  color: var(--muted);
   font-size: 12px;
   padding: 8px 14px;
 }
 
 .btn-outline:hover {
-  background: var(--bg);
   border-color: var(--accent);
   color: var(--accent);
+  background: var(--accent-lt);
 }
 
 /* ── Loader ────────────────────────────────────────────────── */
-#loader { display: none; text-align: center; padding: 40px 0; }
+#loader { display: none; text-align: center; padding: 44px 0; }
 #loader.show { display: block; }
 
 .spinner {
-  width: 32px; height: 32px;
-  border: 2px solid var(--border);
+  width: 34px; height: 34px;
+  border: 3px solid var(--border);
   border-top-color: var(--accent);
   border-radius: 50%;
   animation: spin .7s linear infinite;
@@ -254,26 +305,25 @@ input[type="text"]:focus {
 #loader p { font-size: 13px; color: var(--muted); }
 
 /* ── Results ───────────────────────────────────────────────── */
-#results { display: none; margin-top: 28px; }
-#results.show { display: block; animation: fadeUp .35s ease; }
+#results { display: none; margin-top: 24px; }
+#results.show { display: block; animation: fadeUp .4s ease; }
 
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(12px); }
+  from { opacity: 0; transform: translateY(14px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* results header row */
 .results-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 10px;
-  margin-bottom: 20px;
+  margin-bottom: 18px;
 }
 
 .results-bar h2 {
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 700;
   color: var(--text);
 }
@@ -282,76 +332,98 @@ input[type="text"]:focus {
 
 .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
 
-/* dominant card */
+/* ── Dominant card ─────────────────────────────────────────── */
 .dominant-card {
   display: flex;
   align-items: flex-start;
-  gap: 14px;
-  padding: 18px 20px;
-  background: var(--accent-lt);
-  border: 1px solid #bfdbfe;
+  gap: 16px;
+  padding: 20px 22px;
+  background: linear-gradient(135deg, #eef1ff 0%, #f5f0ff 100%);
+  border: 1px solid #c7d2fe;
   border-radius: var(--radius-lg);
   margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.dominant-card::after {
+  content: '';
+  position: absolute;
+  top: -20px; right: -20px;
+  width: 100px; height: 100px;
+  background: radial-gradient(circle, rgba(124,58,237,.12), transparent 70%);
+  pointer-events: none;
 }
 
 .dom-emoji {
-  font-size: 24px;
-  width: 48px; height: 48px;
-  background: var(--white);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  font-size: 22px;
+  width: 50px; height: 50px;
+  background: #fff;
+  border: 1px solid #c7d2fe;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: var(--shadow);
+  box-shadow: 0 2px 8px rgba(67,97,238,.12);
 }
 
 .dom-label {
-  font-size: 11px;
-  font-weight: 600;
+  font-size: 10px;
+  font-weight: 700;
   color: var(--accent);
   text-transform: uppercase;
-  letter-spacing: .07em;
-  margin-bottom: 2px;
+  letter-spacing: .1em;
+  margin-bottom: 3px;
 }
 
 .dom-name {
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 700;
   color: var(--text);
-  margin-bottom: 3px;
+  margin-bottom: 4px;
 }
 
 .dom-desc {
   font-size: 12px;
   color: var(--muted);
-  line-height: 1.6;
+  line-height: 1.65;
 }
 
-/* radar */
+/* ── Radar ─────────────────────────────────────────────────── */
 .radar-wrap {
   display: flex;
   justify-content: center;
   padding: 24px;
+  background: linear-gradient(135deg, #fafbff, #f6f0ff);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
   margin-bottom: 20px;
 }
 
-canvas { max-width: 280px; width: 100%; }
+canvas { max-width: 290px; width: 100%; }
 
-/* section label */
+/* ── Section label ─────────────────────────────────────────── */
 .section-label {
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--subtle);
   text-transform: uppercase;
-  letter-spacing: .08em;
+  letter-spacing: .09em;
   margin-bottom: 12px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-/* trait cards */
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* ── Trait cards ───────────────────────────────────────────── */
 .trait-list { display: grid; gap: 10px; }
 
 .trait-card {
@@ -360,13 +432,14 @@ canvas { max-width: 280px; width: 100%; }
   border-radius: var(--radius-lg);
   padding: 16px 18px;
   box-shadow: var(--shadow);
-  transition: border-color .15s, box-shadow .15s;
-  animation: fadeUp .3s ease both;
+  transition: box-shadow .2s, transform .2s, border-color .2s;
+  animation: fadeUp .35s ease both;
+  border-left: 3px solid transparent;
 }
 
 .trait-card:hover {
-  border-color: var(--border-md);
   box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
 }
 
 .tc-top {
@@ -380,19 +453,18 @@ canvas { max-width: 280px; width: 100%; }
 .tc-left {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .tc-emoji {
-  font-size: 16px;
-  width: 30px; height: 30px;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 6px;
+  font-size: 15px;
+  width: 32px; height: 32px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  border: 1px solid transparent;
 }
 
 .tc-name {
@@ -409,34 +481,26 @@ canvas { max-width: 280px; width: 100%; }
 }
 
 .tc-score {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
-  color: var(--text);
   font-variant-numeric: tabular-nums;
 }
 
 .badge {
   font-size: 10px;
-  font-weight: 600;
-  padding: 2px 7px;
-  border-radius: 4px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 5px;
   letter-spacing: .04em;
   text-transform: uppercase;
 }
 
-.badge-high {
-  background: #dcfce7;
-  color: #166534;
-}
-
-.badge-low {
-  background: #f1f5f9;
-  color: #64748b;
-}
+.badge-high { background: #dcfce7; color: #15803d; }
+.badge-low  { background: #f1f5f9; color: #64748b; }
 
 .bar-track {
-  height: 4px;
-  background: var(--bg);
+  height: 5px;
+  background: #f1f5f9;
   border-radius: 100px;
   overflow: hidden;
   margin-bottom: 10px;
@@ -446,8 +510,7 @@ canvas { max-width: 280px; width: 100%; }
   height: 100%;
   border-radius: 100px;
   width: 0;
-  background: var(--accent);
-  transition: width .9s cubic-bezier(.4,0,.2,1);
+  transition: width 1s cubic-bezier(.4,0,.2,1);
 }
 
 .tc-desc {
@@ -456,14 +519,11 @@ canvas { max-width: 280px; width: 100%; }
   line-height: 1.65;
 }
 
-/* ── Divider ────────────────────────────────────────────────── */
-.divider { margin: 24px 0; border: none; border-top: 1px solid var(--border); }
-
 /* ── Responsive ────────────────────────────────────────────── */
 @media (max-width: 480px) {
   .dominant-card { flex-direction: column; }
   .results-bar   { flex-direction: column; align-items: flex-start; }
-  .page          { padding: 28px 16px 60px; }
+  .hero          { padding: 28px 20px 26px; }
 }
 </style>
 </head>
@@ -471,23 +531,26 @@ canvas { max-width: 280px; width: 100%; }
 
 <div class="page">
 
-  <!-- Page header -->
-  <div class="page-header">
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-tag"><span class="hero-dot"></span> NLP · Big Five · AI</div>
     <h1>CV Personality Analyzer</h1>
-    <p>Upload a résumé to predict Big Five personality traits using NLP keyword analysis.</p>
+    <p>Upload a résumé to instantly predict Big Five personality traits<br/>using natural language processing.</p>
   </div>
 
   <!-- Upload card -->
   <div class="card">
     <div class="card-body">
-      <div class="card-title">Upload CV</div>
+      <div class="card-label">Upload CV</div>
 
       <div id="dropZone">
         <div class="drop-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
                stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
             <polyline points="14 2 14 8 20 8"/>
+            <line x1="12" y1="18" x2="12" y2="12"/>
+            <polyline points="9 15 12 12 15 15"/>
           </svg>
         </div>
         <div class="drop-title">Drag & drop your CV here</div>
@@ -561,14 +624,10 @@ canvas { max-width: 280px; width: 100%; }
       </div>
     </div>
 
-    <!-- Radar chart -->
-    <div class="card">
-      <div class="radar-wrap">
-        <canvas id="radar" width="280" height="280"></canvas>
-      </div>
+    <!-- Radar -->
+    <div class="radar-wrap">
+      <canvas id="radar" width="290" height="290"></canvas>
     </div>
-
-    <hr class="divider"/>
 
     <div class="section-label">Trait Breakdown</div>
 
@@ -579,7 +638,14 @@ canvas { max-width: 280px; width: 100%; }
 </div><!-- /page -->
 
 <script>
-const TRAIT_COLOR = "#2563eb"; // single accent — all bars same professional blue
+// Per-trait color config
+const TRAITS_META = {
+  "Openness":            { color: "#4361ee", bg: "#eef1ff", border: "#c7d2fe" },
+  "Conscientiousness":   { color: "#0891b2", bg: "#ecfeff", border: "#a5f3fc" },
+  "Extraversion":        { color: "#059669", bg: "#ecfdf5", border: "#6ee7b7" },
+  "Agreeableness":       { color: "#d97706", bg: "#fffbeb", border: "#fcd34d" },
+  "Emotional Stability": { color: "#7c3aed", bg: "#f5f3ff", border: "#ddd6fe" },
+};
 
 let pickedFile = null;
 let radarChart = null;
@@ -645,29 +711,32 @@ function render(data) {
   list.innerHTML = "";
 
   data.traits.forEach((t, i) => {
+    const meta = TRAITS_META[t.name] || { color: "#4361ee", bg: "#eef1ff", border: "#c7d2fe" };
     const card = document.createElement("div");
     card.className = "trait-card";
-    card.style.animationDelay = `${i * 60}ms`;
+    card.style.animationDelay = `${i * 65}ms`;
+    card.style.borderLeftColor = meta.color;
+
     card.innerHTML = `
       <div class="tc-top">
         <div class="tc-left">
-          <div class="tc-emoji">${t.emoji}</div>
+          <div class="tc-emoji" style="background:${meta.bg};border-color:${meta.border}">${t.emoji}</div>
           <div class="tc-name">${t.name}</div>
         </div>
         <div class="tc-right">
-          <div class="tc-score">${t.score}%</div>
+          <div class="tc-score" style="color:${meta.color}">${t.score}%</div>
           <span class="badge ${t.level === "HIGH" ? "badge-high" : "badge-low"}">${t.level}</span>
         </div>
       </div>
       <div class="bar-track">
-        <div class="bar-fill" id="bf${i}"></div>
+        <div class="bar-fill" id="bf${i}" style="background:linear-gradient(90deg,${meta.color},${meta.color}bb)"></div>
       </div>
       <div class="tc-desc">${t.description}</div>
     `;
     list.appendChild(card);
     setTimeout(() => {
       document.getElementById(`bf${i}`).style.width = t.score + "%";
-    }, 150 + i * 60);
+    }, 150 + i * 65);
   });
 
   drawRadar(data.traits);
@@ -677,10 +746,12 @@ function render(data) {
   el.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-
+// ── Radar ─────────────────────────────────────────────────────
 function drawRadar(traits) {
   const ctx = document.getElementById("radar").getContext("2d");
   if (radarChart) radarChart.destroy();
+
+  const pointColors = traits.map(t => (TRAITS_META[t.name] || {color:"#4361ee"}).color);
 
   radarChart = new Chart(ctx, {
     type: "radar",
@@ -688,14 +759,14 @@ function drawRadar(traits) {
       labels: traits.map(t => t.name),
       datasets: [{
         data: traits.map(t => t.score),
-        backgroundColor: "rgba(37,99,235,.08)",
-        borderColor: "#2563eb",
-        borderWidth: 1.5,
-        pointBackgroundColor: "#2563eb",
+        backgroundColor: "rgba(67,97,238,.1)",
+        borderColor: "#4361ee",
+        borderWidth: 2,
+        pointBackgroundColor: pointColors,
         pointBorderColor: "#fff",
-        pointBorderWidth: 1.5,
-        pointRadius: 4,
-        pointHoverRadius: 6,
+        pointBorderWidth: 2,
+        pointRadius: 5,
+        pointHoverRadius: 7,
       }]
     },
     options: {
@@ -706,14 +777,14 @@ function drawRadar(traits) {
           min: 0, max: 100,
           ticks: {
             stepSize: 25,
-            color: "#d1d5db",
+            color: "#c4cde0",
             backdropColor: "transparent",
             font: { family: "Inter", size: 9 },
           },
-          grid:        { color: "#e5e7eb" },
-          angleLines:  { color: "#e5e7eb" },
+          grid:        { color: "#e5e9f5" },
+          angleLines:  { color: "#dde3f0" },
           pointLabels: {
-            color: "#6b7280",
+            color: "#5a6480",
             font: { family: "Inter", size: 11, weight: "600" },
           },
         }
@@ -722,17 +793,14 @@ function drawRadar(traits) {
   });
 }
 
-
+// ── Export ────────────────────────────────────────────────────
 function exportTXT() {
   if (!lastResult) return;
   const d = lastResult;
-  let out = `PERSONALITY PREDICTION REPORT\n`;
-  out += `Candidate : ${d.candidate_name}\n`;
-  out += `${"─".repeat(56)}\n\n`;
+  let out = `PERSONALITY PREDICTION REPORT\nCandidate : ${d.candidate_name}\n${"─".repeat(56)}\n\n`;
   d.traits.forEach(t => {
     const bar = "█".repeat(Math.round(t.score / 5)) + "░".repeat(20 - Math.round(t.score / 5));
-    out += `${t.name.padEnd(24)} ${String(t.score).padStart(5)}%  [${bar}]  ${t.level}\n`;
-    out += `  ${t.description}\n\n`;
+    out += `${t.name.padEnd(24)} ${String(t.score).padStart(5)}%  [${bar}]  ${t.level}\n  ${t.description}\n\n`;
   });
   out += `${"─".repeat(56)}\nDominant Trait : ${d.dominant_trait}\n`;
 
@@ -742,7 +810,7 @@ function exportTXT() {
   a.click();
 }
 
-
+// ── Reset ─────────────────────────────────────────────────────
 function resetAll() {
   pickedFile = null;
   fileInput.value = "";
